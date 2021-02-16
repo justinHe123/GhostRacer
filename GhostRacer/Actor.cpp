@@ -179,6 +179,7 @@ void GhostRacer::move()
 void GhostRacer::doSomething()
 {
 	if (!isAlive()) return;
+
 	int ch;
 	if (getX() <= ROAD_CENTER - ROAD_WIDTH / 2)
 	{
@@ -220,6 +221,7 @@ void GhostRacer::doSomething()
 			break;
 		}
 	}
+
 	move();
 }
 
@@ -276,7 +278,7 @@ void YellowBorderLine::doSomething()
 
 HolyWaterProjectile::HolyWaterProjectile(StudentWorld* world, double startX, double startY, int dir) :
 	Actor(IID_HOLY_WATER_PROJECTILE, startX, startY, dir, 1.0, 1, world, 0, 0),
-	m_travelled(0)
+	m_traveled(0)
 {
 
 }
@@ -289,19 +291,21 @@ HolyWaterProjectile::~HolyWaterProjectile()
 void HolyWaterProjectile::doSomething()
 {
 	if (!isAlive()) return;
+
 	Actor* a = nullptr;
 	if (getWorld()->checkProjectileCollision(this, a)) {
 		a->damage(1);
 		die();
 		return;
 	}
+
 	move();
 }
 
 void HolyWaterProjectile::move()
 {
-	m_travelled += SPRITE_HEIGHT;
-	if (m_travelled > 160) {
+	m_traveled += SPRITE_HEIGHT;
+	if (m_traveled > 160) {
 		die();
 		return;
 	}
@@ -309,4 +313,214 @@ void HolyWaterProjectile::move()
 	double new_x = getX();
 	double new_y = getY();
 	if (new_x < 0 || new_x > VIEW_WIDTH || new_y < 0 || new_y > VIEW_HEIGHT) die();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+////////////////////////// HOSTILE  IMPLEMENTATION //////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Hostile::Hostile(int imageID, int dir, int size, int startHealth, StudentWorld* world, 
+	double startX, double startY, double xSpeed, double ySpeed) :
+	LivingActor(imageID, startX, startY, dir, size, 0, startHealth, world, xSpeed, ySpeed),
+	m_plandistance(0)
+{
+
+}
+
+int Hostile::getPlanDistance() const
+{
+	return m_plandistance;
+}
+
+void Hostile::setPlanDistance(int amount)
+{
+	m_plandistance = amount;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+///////////////////////// PEDESTRIAN IMPLEMENTATION /////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Pedestrian::Pedestrian(int imageID, int size, StudentWorld* world, double startX, double startY)
+	: Hostile(imageID, 0, size, 2, world, startX, startY, 0, -4)
+{
+
+}
+
+void Pedestrian::makeHurtSound() const
+{
+	getWorld()->playSound(SOUND_PED_HURT);
+}
+
+void Pedestrian::makeDieSound() const
+{
+	getWorld()->playSound(SOUND_PED_DIE);
+}
+
+void Pedestrian::pickNewPlan()
+{
+	int newPlanDistance = getPlanDistance() - 1;
+	setPlanDistance(newPlanDistance);
+	if (newPlanDistance > 0) return;
+	int randSpeed = randInt(-3, 2);
+	if (randSpeed >= 0) randSpeed++;
+	setXSpeed(randSpeed);
+	setPlanDistance(randInt(4, 32));
+	if (randSpeed < 0) setDirection(180);
+	else setDirection(0);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+////////////////////// HUMAN PEDESTRIAN IMPLEMENTATION //////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+HumanPedestrian::HumanPedestrian(StudentWorld* world, double startX, double startY) :
+	Pedestrian(IID_HUMAN_PED, 2.0, world, startX, startY)
+{
+
+}
+
+void HumanPedestrian::damage(int amount) 
+{
+	LivingActor::damage(0);
+	setXSpeed(getXSpeed() * -1);
+	setDirection(getDirection() + 180);
+}
+
+void HumanPedestrian::doSomething()
+{
+	if (!isAlive()) return;
+	if (getWorld()->checkGhostRacerCollision(this)) {
+		getWorld()->getGhostRacer()->die();
+		return;
+	}
+
+	move();
+	pickNewPlan();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+///////////////////// ZOMBIE PEDESTRIAN  IMPLEMENTATION /////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+ZombiePedestrian::ZombiePedestrian(StudentWorld* world, double startX, double startY) :
+	Pedestrian(IID_ZOMBIE_PED, 3.0, world, startX, startY),
+	m_tickstogrunt(0)
+{
+
+}
+
+void ZombiePedestrian::doSomething()
+{
+	if (!isAlive()) return;
+	if (getWorld()->checkGhostRacerCollision(this))
+	{
+		getWorld()->getGhostRacer()->damage(5);
+		damage(2);
+		return; // NOTE: should de dead...
+	}
+
+	double dx = getX() - getWorld()->getGhostRacer()->getX();
+	double dy = getY() - getWorld()->getGhostRacer()->getY();
+	if (dx >= -30 && dx <= 30 && dy > 0) {
+		setDirection(270);
+		if (dx > 0) { setXSpeed(1); } // To the left
+		else if (dx < 0) { setXSpeed(-1); } // To the right
+		else { setXSpeed(0); } 
+		m_tickstogrunt--;
+		if (m_tickstogrunt <= 0) {
+			getWorld()->playSound(SOUND_ZOMBIE_ATTACK);
+			m_tickstogrunt = 20;
+		}
+	}
+
+	move();
+	pickNewPlan();
+}
+
+void ZombiePedestrian::damage(int amount)
+{
+	LivingActor::damage(amount);
+	if (!isAlive()) {
+		int rand = randInt(1, 5);
+		//if (rand == 1) getWorld()->spawnActor(/* Healing Goodie */);
+		if (!getWorld()->checkGhostRacerCollision(this)) { getWorld()->increaseScore(150); }
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+///////////////////////// ZOMBIE CAB IMPLEMENTATION /////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+ZombieCab::ZombieCab(StudentWorld* world, double startX, double startY) :
+	Hostile(IID_ZOMBIE_CAB, 90, 4.0, 3, world, startX, startY, 0, 0),
+	m_hit(false)
+{
+
+}
+
+void ZombieCab::damage(int amount)
+{
+	LivingActor::damage(amount);
+	if (!isAlive()) {
+		int rand = randInt(1, 5);
+		//if (rand == 1) getWorld()->spawnActor(/* Oil Slick */);
+		getWorld()->increaseScore(200);
+	}
+}
+
+void ZombieCab::pickNewPlan()
+{
+	int newPlanDistance = getPlanDistance() - 1;
+	setPlanDistance(newPlanDistance);
+	if (newPlanDistance > 0) return;
+	int randSpeed = randInt(-2, 1);
+	if (randSpeed >= 0) randSpeed++;
+	setYSpeed(randSpeed);
+	setPlanDistance(randInt(4, 32));
+}
+
+
+void ZombieCab::doSomething() 
+{
+	if (!isAlive()) return;
+
+	if (!m_hit && getWorld()->checkGhostRacerCollision(this)) {
+		getWorld()->playSound(SOUND_VEHICLE_CRASH);
+		getWorld()->getGhostRacer()->damage(20);
+		double dx = getX() - getWorld()->getGhostRacer()->getX();
+		if (dx >= 0) {
+			setXSpeed(-5);
+			setDirection(120 + randInt(0, 19));
+		}
+		else {
+			setXSpeed(5);
+			setDirection(60 - randInt(0, 19));
+		}
+		m_hit = true;
+	}
+
+	move();
+
+	// Adjust speed
+	double dv = getYSpeed() - getWorld()->getGhostRacer()->getYSpeed();
+	if (dv > 0) {
+
+	}
+	else if (dv <= 0) {
+
+	}
+
+	pickNewPlan();
+}
+
+void ZombieCab::makeHurtSound() const
+{
+	getWorld()->playSound(SOUND_VEHICLE_HURT);
+}
+
+void ZombieCab::makeDieSound() const
+{
+	getWorld()->playSound(SOUND_VEHICLE_DIE);
 }

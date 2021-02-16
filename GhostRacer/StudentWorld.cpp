@@ -88,8 +88,7 @@ int StudentWorld::move()
             a->doSomething();
             if (!m_ghostracer->isAlive()) { return GWSTATUS_PLAYER_DIED; }
             if (m_saved >= GameWorld::getLevel() * 2 + 5) {
-                // Advance to next level
-                // Award bonus points to player
+                increaseScore(m_bonus);
                 return GWSTATUS_FINISHED_LEVEL;
             }
         }
@@ -170,6 +169,11 @@ bool StudentWorld::checkProjectileCollision(Actor* projectile, Actor* &result)
         }
     }
     return false;
+}
+
+bool StudentWorld::checkGhostRacerCollision(Actor* a) const
+{
+    return checkCollision(a, m_ghostracer);
 }
 
 void StudentWorld::spawnActor(Actor* a)

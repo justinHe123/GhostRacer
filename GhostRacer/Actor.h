@@ -119,7 +119,68 @@ public:
 	virtual void doSomething();
 	virtual void move();
 private:
-	int m_travelled;
+	int m_traveled;
+};
+
+class Hostile : public LivingActor
+{
+public:
+	Hostile(int imageID, int dir, int size, int startHealth, StudentWorld* world, 
+		double startX, double startY, double xSpeed, double ySpeed);
+	
+	int getPlanDistance() const;
+
+	void setPlanDistance(int amount);
+	virtual void pickNewPlan() = 0;
+
+private:
+	int m_plandistance;
+};
+
+class Pedestrian : public Hostile
+{
+public:
+	Pedestrian(int imageID, int size, StudentWorld* world, double startX, double startY);
+
+	virtual void pickNewPlan();
+
+private:
+	virtual void makeHurtSound() const;
+	virtual void makeDieSound() const;
+};
+
+class HumanPedestrian : public Pedestrian
+{
+public:
+	HumanPedestrian(StudentWorld* world, double startX, double startY);
+	
+	virtual void doSomething();
+	virtual void damage(int amount);
+};
+
+class ZombiePedestrian : public Pedestrian
+{
+public:
+	ZombiePedestrian(StudentWorld* world, double startX, double startY);
+
+	virtual void doSomething();
+	virtual void damage(int amount);
+private:
+	int m_tickstogrunt;
+};
+
+class ZombieCab : public Hostile
+{
+public:
+	ZombieCab(StudentWorld* world, double startX, double startY);
+
+	virtual void doSomething();
+	virtual void damage(int amount);
+	virtual void pickNewPlan();
+private:
+	bool m_hit;
+	virtual void makeHurtSound() const;
+	virtual void makeDieSound() const;
 };
 
 #endif // ACTOR_H_
