@@ -21,9 +21,11 @@ public:
     virtual void cleanUp();
 
     GhostRacer* getGhostRacer() const;
+    bool checkProjectileCollision(Actor* projectile, Actor*& a);
 
     void setWhiteBorderY(int y);
     void addSoul();
+    void spawnActor(Actor* a);
 
 private:
     GhostRacer* m_ghostracer;
@@ -31,6 +33,8 @@ private:
     int m_saved;
     int m_whitebordery;
     int m_bonus;
+
+    bool checkCollision(Actor* first, Actor* second) const;
 };
 
 #endif // STUDENTWORLD_H_

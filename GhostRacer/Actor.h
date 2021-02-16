@@ -23,6 +23,7 @@ class Actor : public GraphObject
 {
 public:
 	// Constructor
+	// TODO: Consider moving xSpeed and ySpeed to a derived class
 	Actor(int imageID, double startX, double startY, int dir, double size, unsigned int depth, StudentWorld* world, double xSpeed, double ySpeed);
 	virtual ~Actor();
 
@@ -42,6 +43,7 @@ public:
 	void setXSpeed(double speed);
 	void setYSpeed(double speed);
 	virtual void move();
+	virtual void damage(int amount);
 
 private:
 	bool m_alive;
@@ -63,7 +65,7 @@ public:
 	int getHealth() const;
 
 	void heal(int amount);
-	void damage(int amount);
+	virtual void damage(int amount);
 
 private:
 	int m_health;
@@ -90,14 +92,7 @@ private:
 	virtual void makeDieSound() const;
 };
 
-class BorderLine : public Actor
-{
-public:
-	BorderLine(int imageID, StudentWorld* world, double startX, double startY);
-	virtual ~BorderLine();
-};
-
-class WhiteBorderLine : public BorderLine
+class WhiteBorderLine : public Actor
 {
 public:
 	WhiteBorderLine(StudentWorld* world, double startX, double startY);
@@ -106,13 +101,25 @@ public:
 	virtual void doSomething();
 };
 
-class YellowBorderLine : public BorderLine
+class YellowBorderLine : public Actor
 {
 public:
 	YellowBorderLine(StudentWorld* world, double startX, double startY);
 	virtual ~YellowBorderLine();
 
 	virtual void doSomething();
+};
+
+class HolyWaterProjectile : public Actor
+{
+public:
+	HolyWaterProjectile(StudentWorld* world, double startX, double startY, int dir);
+	virtual ~HolyWaterProjectile();
+
+	virtual void doSomething();
+	virtual void move();
+private:
+	int m_travelled;
 };
 
 #endif // ACTOR_H_

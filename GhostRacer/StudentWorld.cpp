@@ -111,7 +111,6 @@ int StudentWorld::move()
     int RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH / 2;
     int new_border_y = VIEW_HEIGHT - SPRITE_HEIGHT;
     int delta_y = new_border_y - m_whitebordery;
-    std::cerr << delta_y << std::endl;
     if (delta_y >= SPRITE_HEIGHT)
     {
         m_actors.push_back(new YellowBorderLine(this, LEFT_EDGE, new_border_y));
@@ -151,4 +150,29 @@ void StudentWorld::cleanUp()
 GhostRacer* StudentWorld::getGhostRacer() const
 {
     return m_ghostracer;
+}
+
+bool StudentWorld::checkCollision(Actor* a, Actor* b) const
+{
+    int delta_x = a->getX() - b->getX();
+    int delta_y = a->getY() - b->getY();
+    int radius_sum = a->getRadius() + b->getRadius();
+    return delta_x < radius_sum * 0.25 && delta_y < radius_sum * 0.6;
+}
+
+bool StudentWorld::checkProjectileCollision(Actor* projectile, Actor* &result)
+{
+    for (list<Actor*>::iterator it = m_actors.begin(); it != m_actors.end(); it++) {
+        Actor* a = *it;
+        if (a->isProjectileVulnerable() && checkCollision(projectile, a)) {
+            result = a; 
+            return true;
+        }
+    }
+    return false;
+}
+
+void StudentWorld::spawnActor(Actor* a)
+{
+    m_actors.push_back(a);
 }

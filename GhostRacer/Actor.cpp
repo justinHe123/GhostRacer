@@ -78,6 +78,11 @@ void Actor::move()
 	if (new_x < 0 || new_x > VIEW_WIDTH || new_y < 0 || new_y > VIEW_HEIGHT) die();
 }
 
+void Actor::damage(int amount)
+{
+	// DEFAULT: Do nothing
+}
+
 /////////////////////////////////////////////////////////////////////////////
 //////////////////////// LIVING ACTOR IMPLEMENTATION ////////////////////////
 /////////////////////////////////////////////////////////////////////////////
@@ -111,7 +116,7 @@ int LivingActor::getHealth() const
 	return m_health;
 }
 
-// NOTE: only used by GhostRacer
+// NOTE: only used by GhostRacer, but needed here to access m_health
 void LivingActor::heal(int amount)
 {
 	m_health += amount;
@@ -175,13 +180,13 @@ void GhostRacer::doSomething()
 {
 	if (!isAlive()) return;
 	int ch;
-	if (getX() <= ROAD_CENTER - ROAD_WIDTH / 2 /* LEFT ROAD BOUNDARY */)
+	if (getX() <= ROAD_CENTER - ROAD_WIDTH / 2)
 	{
 		if (getDirection() > 90) damage(10);
 		setDirection(82);
 		getWorld()->playSound(SOUND_VEHICLE_CRASH);
 	}
-	else if (getX() >= ROAD_CENTER + ROAD_WIDTH / 2 /* RIGHT ROAD BOUNDARY */)
+	else if (getX() >= ROAD_CENTER + ROAD_WIDTH / 2)
 	{
 		if (getDirection() < 90) damage(10);
 		setDirection(98);
@@ -193,7 +198,10 @@ void GhostRacer::doSomething()
 		{
 		case KEY_PRESS_SPACE:
 			if (m_sprays >= 1) {
-				/* Add holy water SPRITE_HEIGHT in front of ghost racer */
+				double dx, dy;
+				int dir = getDirection();
+				getPositionInThisDirection(dir, SPRITE_HEIGHT, dx, dy);
+				getWorld()->spawnActor(new HolyWaterProjectile(getWorld(), dx, dy, dir));
 				getWorld()->playSound(SOUND_PLAYER_SPRAY);
 				m_sprays--;
 			}
@@ -205,10 +213,10 @@ void GhostRacer::doSomething()
 			if (getDirection() > 66) { setDirection(getDirection() - 8); }
 			break;
 		case KEY_PRESS_UP:
-			if (m_forwardSpeed < 5) m_forwardSpeed++;
+			if (m_forwardSpeed < 5) { m_forwardSpeed++; }
 			break;
 		case KEY_PRESS_DOWN:
-			if (m_forwardSpeed > -1) m_forwardSpeed--;
+			if (m_forwardSpeed > -1) { m_forwardSpeed--; }
 			break;
 		}
 	}
@@ -229,19 +237,8 @@ void GhostRacer::makeDieSound() const
 ///////////////////////// BORDERLINE IMPLEMENTATION /////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
-BorderLine::BorderLine(int imageID, StudentWorld* world, double startX, double startY) :
-	Actor(imageID, startX, startY, 0, 2.0, 1, world, 0, -4)
-{
-	
-}
-
-BorderLine::~BorderLine()
-{
-	
-}
-
 WhiteBorderLine::WhiteBorderLine(StudentWorld* world, double startX, double startY) :
-	BorderLine(IID_WHITE_BORDER_LINE, world, startX, startY)
+	Actor(IID_WHITE_BORDER_LINE, startX, startY, 0, 2.0, 1, world, 0, -4)
 {
 
 }
@@ -258,7 +255,7 @@ void WhiteBorderLine::doSomething()
 }
 
 YellowBorderLine::YellowBorderLine(StudentWorld* world, double startX, double startY) :
-	BorderLine(IID_YELLOW_BORDER_LINE, world, startX, startY)
+	Actor(IID_YELLOW_BORDER_LINE, startX, startY, 0, 2.0, 1, world, 0, -4)
 {
 
 }
@@ -271,4 +268,45 @@ YellowBorderLine::~YellowBorderLine()
 void YellowBorderLine::doSomething()
 {
 	move();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////// HOLY WATER PROJECTILE  IMPLEMENTATION ///////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+HolyWaterProjectile::HolyWaterProjectile(StudentWorld* world, double startX, double startY, int dir) :
+	Actor(IID_HOLY_WATER_PROJECTILE, startX, startY, dir, 1.0, 1, world, 0, 0),
+	m_travelled(0)
+{
+
+}
+
+HolyWaterProjectile::~HolyWaterProjectile()
+{
+
+}
+
+void HolyWaterProjectile::doSomething()
+{
+	if (!isAlive()) return;
+	Actor* a = nullptr;
+	if (getWorld()->checkProjectileCollision(this, a)) {
+		a->damage(1);
+		die();
+		return;
+	}
+	move();
+}
+
+void HolyWaterProjectile::move()
+{
+	m_travelled += SPRITE_HEIGHT;
+	if (m_travelled > 160) {
+		die();
+		return;
+	}
+	moveForward(SPRITE_HEIGHT);
+	double new_x = getX();
+	double new_y = getY();
+	if (new_x < 0 || new_x > VIEW_WIDTH || new_y < 0 || new_y > VIEW_HEIGHT) die();
 }
