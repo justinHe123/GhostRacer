@@ -20,18 +20,14 @@ StudentWorld::StudentWorld(string assetPath) :
     GameWorld(assetPath),
     m_saved(0),
     m_whitebordery(0),
-    m_bonus(5000)
+    m_bonus(5000),
+    m_ghostracer(nullptr)
 {
 }
 
 StudentWorld::~StudentWorld()
 {
     cleanUp();
-}
-
-void StudentWorld::setWhiteBorderY(int y)
-{
-    m_whitebordery = y;
 }
 
 void StudentWorld::addSoul()
@@ -42,7 +38,6 @@ void StudentWorld::addSoul()
 // Initialize data structures
 int StudentWorld::init()
 {
-    m_whitebordery = 0;
     m_saved = 0;
     m_bonus = 5000;
 
@@ -56,8 +51,8 @@ int StudentWorld::init()
     // add yellow border lines
     int y = 0;
     for (int i = 0; i < n; i++) {
-        m_actors.push_back(new YellowBorderLine(this, LEFT_EDGE, y));
-        m_actors.push_back(new YellowBorderLine(this, RIGHT_EDGE, y));
+        m_actors.push_back(new BorderLine(IID_YELLOW_BORDER_LINE, this, LEFT_EDGE, y));
+        m_actors.push_back(new BorderLine(IID_YELLOW_BORDER_LINE, this, RIGHT_EDGE, y));
         y += SPRITE_HEIGHT;
     }
 
@@ -65,10 +60,12 @@ int StudentWorld::init()
     int m = VIEW_HEIGHT / (4 * SPRITE_HEIGHT);
     y = 0;
     for (int i = 0; i < m; i++) {
-        m_actors.push_back(new WhiteBorderLine(this, LEFT_EDGE + ROAD_WIDTH/3, y));
-        m_actors.push_back(new WhiteBorderLine(this, RIGHT_EDGE - ROAD_WIDTH/3, y));
+        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, LEFT_EDGE + ROAD_WIDTH/3, y));
+        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, RIGHT_EDGE - ROAD_WIDTH/3, y));
         y += 4 * SPRITE_HEIGHT;
     }
+
+    m_whitebordery = y - 4 * SPRITE_HEIGHT;
 
     return GWSTATUS_CONTINUE_GAME;
 }
@@ -112,19 +109,21 @@ int StudentWorld::move()
 
     // Potentially add new actors 
     // Add new road markers
+    m_whitebordery += -4 - m_ghostracer->getYSpeed();
     int LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH / 2;
     int RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH / 2;
     int new_border_y = VIEW_HEIGHT - SPRITE_HEIGHT;
     int delta_y = new_border_y - m_whitebordery;
     if (delta_y >= SPRITE_HEIGHT)
     {
-        m_actors.push_back(new YellowBorderLine(this, LEFT_EDGE, new_border_y));
-        m_actors.push_back(new YellowBorderLine(this, RIGHT_EDGE, new_border_y));
+        m_actors.push_back(new BorderLine(IID_YELLOW_BORDER_LINE, this, LEFT_EDGE, new_border_y));
+        m_actors.push_back(new BorderLine(IID_YELLOW_BORDER_LINE, this, RIGHT_EDGE, new_border_y));
     }
     if (delta_y >= 4 * SPRITE_HEIGHT)
     {
-        m_actors.push_back(new WhiteBorderLine(this, LEFT_EDGE + ROAD_WIDTH / 3, new_border_y));
-        m_actors.push_back(new WhiteBorderLine(this, RIGHT_EDGE - ROAD_WIDTH / 3, new_border_y));
+        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, LEFT_EDGE + ROAD_WIDTH / 3, new_border_y));
+        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, RIGHT_EDGE - ROAD_WIDTH / 3, new_border_y));
+        m_whitebordery = new_border_y;
     }
 
     // Add zombie cab

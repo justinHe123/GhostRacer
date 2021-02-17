@@ -24,7 +24,6 @@ public:
     bool checkProjectileCollision(Actor* projectile, Actor*& result); // NOTE: Cannot make const for some reason
     bool checkGhostRacerCollision(Actor* a) const;
 
-    void setWhiteBorderY(int y);
     void addSoul();
     void spawnActor(Actor* a);
 

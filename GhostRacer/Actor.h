@@ -95,20 +95,11 @@ private:
 	virtual void makeDieSound() const;
 };
 
-class WhiteBorderLine : public Actor
+class BorderLine : public Actor
 {
 public:
-	WhiteBorderLine(StudentWorld* world, double startX, double startY);
-	virtual ~WhiteBorderLine();
-
-	virtual void doSomething();
-};
-
-class YellowBorderLine : public Actor
-{
-public:
-	YellowBorderLine(StudentWorld* world, double startX, double startY);
-	virtual ~YellowBorderLine();
+	BorderLine(int imageID, StudentWorld* world, double startX, double startY);
+	virtual ~BorderLine();
 
 	virtual void doSomething();
 };

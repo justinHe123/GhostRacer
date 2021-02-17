@@ -255,35 +255,18 @@ void GhostRacer::makeDieSound() const
 ///////////////////////// BORDERLINE IMPLEMENTATION /////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
-WhiteBorderLine::WhiteBorderLine(StudentWorld* world, double startX, double startY) :
-	Actor(IID_WHITE_BORDER_LINE, startX, startY, 0, 2.0, 1, world, 0, -4)
+BorderLine::BorderLine(int imageID, StudentWorld* world, double startX, double startY) :
+	Actor(imageID, startX, startY, 0, 2.0, 1, world, 0, -4)
 {
 
 }
 
-WhiteBorderLine::~WhiteBorderLine()
+BorderLine::~BorderLine()
 {
 
 }
 
-void WhiteBorderLine::doSomething()
-{
-	move();
-	if (isAlive()) getWorld()->setWhiteBorderY(getY());
-}
-
-YellowBorderLine::YellowBorderLine(StudentWorld* world, double startX, double startY) :
-	Actor(IID_YELLOW_BORDER_LINE, startX, startY, 0, 2.0, 1, world, 0, -4)
-{
-
-}
-
-YellowBorderLine::~YellowBorderLine()
-{
-
-}
-
-void YellowBorderLine::doSomething()
+void BorderLine::doSomething()
 {
 	move();
 }
