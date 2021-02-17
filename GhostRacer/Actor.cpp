@@ -80,7 +80,7 @@ void Actor::move()
 
 void Actor::damage(int amount)
 {
-	// DEFAULT: Do nothing
+	die(); // Non-living actors hit by projectiles will be destroyed
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -116,11 +116,6 @@ int LivingActor::getHealth() const
 	return m_health;
 }
 
-// NOTE: only used by GhostRacer, but needed here to access m_health
-void LivingActor::heal(int amount)
-{
-	m_health += amount;
-}
 
 void LivingActor::damage(int amount)
 {
@@ -152,19 +147,6 @@ GhostRacer::GhostRacer(StudentWorld* world) :
 GhostRacer::~GhostRacer()
 {
 
-}
-
-double GhostRacer::getYSpeed() const
-{
-	static const double PI = 4 * atan(1.0);
-	double theta = getDirection() * 1.0 / 360 * 2 * PI;
-	return m_forwardSpeed * sin(theta);
-}
-
-// TODO: Check if Forward Speed = Vertical Speed
-int GhostRacer::getSprays() const
-{
-	return m_sprays;
 }
 
 void GhostRacer::move()
@@ -223,6 +205,40 @@ void GhostRacer::doSomething()
 	}
 
 	move();
+}
+
+double GhostRacer::getYSpeed() const
+{
+	static const double PI = 4 * atan(1.0);
+	double theta = getDirection() * 1.0 / 360 * 2 * PI;
+	return m_forwardSpeed * sin(theta);
+}
+
+// TODO: Check if Forward Speed = Vertical Speed
+int GhostRacer::getSprays() const
+{
+	return m_sprays;
+}
+
+void GhostRacer::addSprays(int amount)
+{
+	m_sprays += amount;
+}
+
+void GhostRacer::heal(int amount)
+{
+	if (amount + getHealth() > 100) { amount = 100 - getHealth(); }
+	damage(-1*amount);
+}
+
+void GhostRacer::spin()
+{
+	int randDegree = randInt(-11, 20);
+	if (randDegree <= 4) randDegree -= 9;
+	int newDegree = getDirection() + randDegree;
+	if (newDegree > 120) newDegree = 120;
+	else if (newDegree < 60) newDegree = 60;
+	setDirection(newDegree);
 }
 
 void GhostRacer::makeHurtSound() const
@@ -327,6 +343,11 @@ Hostile::Hostile(int imageID, int dir, int size, int startHealth, StudentWorld* 
 
 }
 
+Hostile::~Hostile()
+{
+
+}
+
 int Hostile::getPlanDistance() const
 {
 	return m_plandistance;
@@ -343,6 +364,11 @@ void Hostile::setPlanDistance(int amount)
 
 Pedestrian::Pedestrian(int imageID, int size, StudentWorld* world, double startX, double startY)
 	: Hostile(imageID, 0, size, 2, world, startX, startY, 0, -4)
+{
+
+}
+
+Pedestrian::~Pedestrian()
 {
 
 }
@@ -381,6 +407,11 @@ HumanPedestrian::HumanPedestrian(StudentWorld* world, double startX, double star
 
 }
 
+HumanPedestrian::~HumanPedestrian()
+{
+
+}
+
 void HumanPedestrian::damage(int amount) 
 {
 	LivingActor::damage(0);
@@ -407,6 +438,11 @@ void HumanPedestrian::doSomething()
 ZombiePedestrian::ZombiePedestrian(StudentWorld* world, double startX, double startY) :
 	Pedestrian(IID_ZOMBIE_PED, 3.0, world, startX, startY),
 	m_tickstogrunt(0)
+{
+
+}
+
+ZombiePedestrian::~ZombiePedestrian()
 {
 
 }
@@ -444,7 +480,7 @@ void ZombiePedestrian::damage(int amount)
 	LivingActor::damage(amount);
 	if (!isAlive()) {
 		int rand = randInt(1, 5);
-		//if (rand == 1) getWorld()->spawnActor(/* Healing Goodie */);
+		if (rand == 1) getWorld()->spawnActor(new HealingGoodie(getWorld(), getX(), getY()));
 		if (!getWorld()->checkGhostRacerCollision(this)) { getWorld()->increaseScore(150); }
 	}
 }
@@ -460,12 +496,17 @@ ZombieCab::ZombieCab(StudentWorld* world, double startX, double startY) :
 
 }
 
+ZombieCab::~ZombieCab()
+{
+
+}
+
 void ZombieCab::damage(int amount)
 {
 	LivingActor::damage(amount);
 	if (!isAlive()) {
 		int rand = randInt(1, 5);
-		//if (rand == 1) getWorld()->spawnActor(/* Oil Slick */);
+		if (rand == 1) getWorld()->spawnActor(new OilSlick(randInt(2, 5), getWorld(), getX(), getY()));
 		getWorld()->increaseScore(200);
 	}
 }
@@ -506,10 +547,10 @@ void ZombieCab::doSomething()
 	// Adjust speed
 	double dv = getYSpeed() - getWorld()->getGhostRacer()->getYSpeed();
 	if (dv > 0) {
-
+		// TODO
 	}
 	else if (dv <= 0) {
-
+		// TODO
 	}
 
 	pickNewPlan();
@@ -523,4 +564,141 @@ void ZombieCab::makeHurtSound() const
 void ZombieCab::makeDieSound() const
 {
 	getWorld()->playSound(SOUND_VEHICLE_DIE);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//////////////////////// INTERACTABLE IMPLEMENTATION ////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Interactable::Interactable(int imageID, int dir, int size, StudentWorld* world, double startX, double startY) :
+	Actor(imageID, startX, startY, dir, size, 0, world, 0, -4)
+{
+
+}
+
+Interactable::~Interactable()
+{
+
+}
+
+void Interactable::doSomething()
+{
+	if (!isAlive()) return;
+	move();
+	if (getWorld()->checkGhostRacerCollision(this)) {
+		interactWithGhostRacer();
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//////////////////// DESTRUCTABLE GOODIE  IMPLEMENTATION ////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+DestructibleGoodie::DestructibleGoodie(int imageID, int dir, int size, StudentWorld* world, double startX, double startY) :
+	Interactable(imageID, dir, size,  world, startX, startY)
+{
+
+}
+
+DestructibleGoodie::~DestructibleGoodie()
+{
+
+}
+
+bool DestructibleGoodie::isProjectileVulnerable() const
+{
+	return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+///////////////////// HOLY WATER GOODIE  IMPLEMENTATION /////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+HolyWaterGoodie::HolyWaterGoodie(StudentWorld* world, double startX, double startY) :
+	DestructibleGoodie(IID_HOLY_WATER_GOODIE, 90, 2.0, world, startX, startY)
+{
+
+}
+
+HolyWaterGoodie::~HolyWaterGoodie()
+{
+
+}
+
+void HolyWaterGoodie::interactWithGhostRacer()
+{
+	getWorld()->getGhostRacer()->addSprays(10);
+	die();
+	getWorld()->playSound(SOUND_GOT_GOODIE);
+	getWorld()->increaseScore(50);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////// HEALING GOODIE IMPLEMENTATION ///////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+HealingGoodie::HealingGoodie(StudentWorld* world, double startX, double startY) :
+	DestructibleGoodie(IID_HEAL_GOODIE, 0, 1.0, world, startX, startY)
+{
+
+}
+
+HealingGoodie::~HealingGoodie()
+{
+
+}
+
+void HealingGoodie::interactWithGhostRacer()
+{
+	getWorld()->getGhostRacer()->heal(10);
+	die();
+	getWorld()->playSound(SOUND_GOT_GOODIE);
+	getWorld()->increaseScore(250);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//////////////////////// SOUL GOODIE  IMPLEMENTATION ////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+SoulGoodie::SoulGoodie(StudentWorld* world, double startX, double startY) :
+	Interactable(IID_SOUL_GOODIE, 0, 4.0, world, startX, startY)
+{
+
+}
+
+SoulGoodie::~SoulGoodie()
+{
+
+}
+
+void SoulGoodie::interactWithGhostRacer()
+{
+	if (getWorld()->checkGhostRacerCollision(this)) {
+		getWorld()->addSoul();
+		die();
+		getWorld()->playSound(SOUND_GOT_SOUL);
+		getWorld()->increaseScore(100);
+	}
+	else { setDirection(getDirection() - 10); }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+///////////////////////// OIL SLICK  IMPLEMENTATION /////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+OilSlick::OilSlick(int size, StudentWorld* world, double startX, double startY) :
+	Interactable(IID_OIL_SLICK, 0, size, world, startX, startY)
+{
+
+}
+
+OilSlick::~OilSlick()
+{
+
+}
+
+void OilSlick::interactWithGhostRacer()
+{
+	getWorld()->playSound(SOUND_OIL_SLICK);
+	getWorld()->getGhostRacer()->spin();
 }

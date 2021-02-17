@@ -64,7 +64,6 @@ public:
 
 	int getHealth() const;
 
-	void heal(int amount);
 	virtual void damage(int amount);
 
 private:
@@ -79,11 +78,15 @@ public:
 	GhostRacer(StudentWorld* world);
 	virtual ~GhostRacer();
 
+	virtual void doSomething();
+	virtual void move();
+
 	int getSprays() const;
 	virtual double getYSpeed() const;
 
-	virtual void doSomething();
-	virtual void move();
+	void addSprays(int amount);
+	void heal(int amount);
+	void spin();
 
 private:
 	int m_sprays;
@@ -127,7 +130,8 @@ class Hostile : public LivingActor
 public:
 	Hostile(int imageID, int dir, int size, int startHealth, StudentWorld* world, 
 		double startX, double startY, double xSpeed, double ySpeed);
-	
+	virtual ~Hostile();
+
 	int getPlanDistance() const;
 
 	void setPlanDistance(int amount);
@@ -141,6 +145,7 @@ class Pedestrian : public Hostile
 {
 public:
 	Pedestrian(int imageID, int size, StudentWorld* world, double startX, double startY);
+	virtual ~Pedestrian();
 
 	virtual void pickNewPlan();
 
@@ -153,7 +158,8 @@ class HumanPedestrian : public Pedestrian
 {
 public:
 	HumanPedestrian(StudentWorld* world, double startX, double startY);
-	
+	virtual ~HumanPedestrian();
+
 	virtual void doSomething();
 	virtual void damage(int amount);
 };
@@ -162,6 +168,7 @@ class ZombiePedestrian : public Pedestrian
 {
 public:
 	ZombiePedestrian(StudentWorld* world, double startX, double startY);
+	virtual ~ZombiePedestrian();
 
 	virtual void doSomething();
 	virtual void damage(int amount);
@@ -173,6 +180,7 @@ class ZombieCab : public Hostile
 {
 public:
 	ZombieCab(StudentWorld* world, double startX, double startY);
+	virtual ~ZombieCab();
 
 	virtual void doSomething();
 	virtual void damage(int amount);
@@ -181,6 +189,67 @@ private:
 	bool m_hit;
 	virtual void makeHurtSound() const;
 	virtual void makeDieSound() const;
+};
+
+class Interactable : public Actor
+{
+public:
+	Interactable(int imageID, int dir, int size, StudentWorld* world, double startX, double startY);
+	virtual ~Interactable();
+
+	virtual void doSomething();
+
+private:
+	virtual void interactWithGhostRacer() = 0;
+};
+
+class DestructibleGoodie : public Interactable
+{
+public:
+	DestructibleGoodie(int imageID, int dir, int size, StudentWorld* world, double startX, double startY);
+	virtual ~DestructibleGoodie();
+
+	virtual bool isProjectileVulnerable() const;
+};
+
+class HolyWaterGoodie : public DestructibleGoodie
+{
+public:
+	HolyWaterGoodie(StudentWorld* world, double startX, double startY);
+	virtual ~HolyWaterGoodie();
+
+private:
+	virtual void interactWithGhostRacer();
+};
+
+class HealingGoodie : public DestructibleGoodie
+{
+public:
+	HealingGoodie(StudentWorld* world, double startX, double startY);
+	virtual ~HealingGoodie();
+
+private: 
+	virtual void interactWithGhostRacer();
+};
+
+class SoulGoodie : public Interactable
+{
+public:
+	SoulGoodie(StudentWorld* world, double startX, double startY);
+	virtual ~SoulGoodie();
+
+private:
+	virtual void interactWithGhostRacer();
+};
+
+class OilSlick : public Interactable
+{
+public:
+	OilSlick(int size, StudentWorld* world, double startX, double startY);
+	virtual ~OilSlick();
+
+private:
+	virtual void interactWithGhostRacer();
 };
 
 #endif // ACTOR_H_
