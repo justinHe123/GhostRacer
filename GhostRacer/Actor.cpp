@@ -138,8 +138,7 @@ void LivingActor::damage(int amount)
 
 GhostRacer::GhostRacer(StudentWorld* world) :
 	LivingActor(IID_GHOST_RACER, 128, 32, 90, 4.0, 0, 100, world, 0, 0),
-	m_sprays(10),
-	m_forwardSpeed(0)
+	m_sprays(10)
 {
 
 }
@@ -196,22 +195,15 @@ void GhostRacer::doSomething()
 			if (getDirection() > 66) { setDirection(getDirection() - 8); }
 			break;
 		case KEY_PRESS_UP:
-			if (m_forwardSpeed < 5) { m_forwardSpeed++; }
+			if (getYSpeed() < 5) { setYSpeed(getYSpeed() + 1); }
 			break;
 		case KEY_PRESS_DOWN:
-			if (m_forwardSpeed > -1) { m_forwardSpeed--; }
+			if (getYSpeed() > -1) { setYSpeed(getYSpeed() - 1); }
 			break;
 		}
 	}
 
 	move();
-}
-
-double GhostRacer::getYSpeed() const
-{
-	static const double PI = 4 * atan(1.0);
-	double theta = getDirection() * 1.0 / 360 * 2 * PI;
-	return m_forwardSpeed * sin(theta);
 }
 
 // TODO: Check if Forward Speed = Vertical Speed
@@ -473,8 +465,8 @@ void ZombiePedestrian::damage(int amount)
 ///////////////////////// ZOMBIE CAB IMPLEMENTATION /////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
-ZombieCab::ZombieCab(StudentWorld* world, double startX, double startY) :
-	Hostile(IID_ZOMBIE_CAB, 90, 4.0, 3, world, startX, startY, 0, 0),
+ZombieCab::ZombieCab(StudentWorld* world, double startX, double startY, double startSpeed) :
+	Hostile(IID_ZOMBIE_CAB, 90, 4.0, 3, world, startX, startY, 0, startSpeed),
 	m_hit(false)
 {
 
@@ -499,11 +491,16 @@ void ZombieCab::changeMovement()
 {
 	// Adjust speed
 	double dv = getYSpeed() - getWorld()->getGhostRacer()->getYSpeed();
-	if (dv > 0) {
-		// TODO
-	}
-	else if (dv <= 0) {
-		// TODO
+	int leftEdge = getWorld()->determineLeftEdge(getX());
+	if (leftEdge != -1) {
+		if (dv > 0) { // faster
+			Actor* a = getWorld()->closestCAV(this, getY(), 1, leftEdge);
+			if (a != nullptr && a->getY() - getY() < 96) { setYSpeed(getYSpeed() - 0.5); }
+		}
+		else { // slower
+			Actor* a = getWorld()->closestCAV(this, getY(), -1, leftEdge);
+			if (a != nullptr && a != getWorld()->getGhostRacer() && getY() - a->getY() < 96) { setYSpeed(getYSpeed() + 0.5); }
+		}
 	}
 
 	int newPlanDistance = getPlanDistance() - 1;

@@ -37,7 +37,7 @@ public:
 	StudentWorld* getWorld() const;
 	bool isAlive() const;
 	double getXSpeed() const;
-	virtual double getYSpeed() const;
+	double getYSpeed() const;
 
 	void die();
 	void setXSpeed(double speed);
@@ -82,7 +82,6 @@ public:
 	virtual void move();
 
 	int getSprays() const;
-	virtual double getYSpeed() const;
 
 	void addSprays(int amount);
 	void heal(int amount);
@@ -90,7 +89,6 @@ public:
 
 private:
 	int m_sprays;
-	double m_forwardSpeed;
 	virtual void makeHurtSound() const;
 	virtual void makeDieSound() const;
 };
@@ -175,7 +173,7 @@ private:
 class ZombieCab : public Hostile
 {
 public:
-	ZombieCab(StudentWorld* world, double startX, double startY);
+	ZombieCab(StudentWorld* world, double startX, double startY, double startSpeed);
 	virtual ~ZombieCab();
 
 	virtual void damage(int amount);

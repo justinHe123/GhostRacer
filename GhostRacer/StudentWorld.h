@@ -23,6 +23,8 @@ public:
     GhostRacer* getGhostRacer() const;
     bool checkProjectileCollision(Actor* projectile, Actor*& result); // NOTE: Cannot make const for some reason
     bool checkGhostRacerCollision(Actor* a) const;
+    Actor* closestCAV(Actor* compare, double y, int direction, int leftEdge);
+    int determineLeftEdge(double x) const;
 
     void addSoul();
     void spawnActor(Actor* a);

@@ -30,11 +30,6 @@ StudentWorld::~StudentWorld()
     cleanUp();
 }
 
-void StudentWorld::addSoul()
-{
-    m_saved++;
-}
-
 // Initialize data structures
 int StudentWorld::init()
 {
@@ -72,9 +67,6 @@ int StudentWorld::init()
 
 int StudentWorld::move()
 {
-    // This code is here merely to allow the game to build, run, and terminate after you hit enter.
-    // Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
-
     // Move all actors
     m_ghostracer->doSomething();
     if (!m_ghostracer->isAlive()) { 
@@ -128,8 +120,39 @@ int StudentWorld::move()
 
     // Add zombie cab
     int chance = max(100 - getLevel() * 10, 20);
+
     if (randInt(0, chance - 1) == 0) {
-        // TODO: Spawn new zombie cab
+        // unholy code to determine spawn lane
+        int edges[3] = { LEFT_EDGE, LEFT_EDGE + ROAD_WIDTH / 3, LEFT_EDGE + ROAD_WIDTH * 2 / 3 };
+        int i = randInt(1, 3);
+        int sum = 0;
+        int edge;
+        Actor* a;
+        while (sum != 6) {
+            edge = edges[i - 1];
+            a = closestCAV(nullptr, 0, 1, edge); // Closest CAV above y = 0 in the chosen lane
+            if (a == nullptr || a->getY() > VIEW_HEIGHT / 3) {
+                m_actors.push_back(new ZombieCab(this, edge + ROAD_WIDTH / 6, 
+                    SPRITE_HEIGHT / 2, m_ghostracer->getYSpeed() + randInt(2, 4)));
+                break;
+            }
+            a = closestCAV(nullptr, VIEW_HEIGHT, -1, edge); // Closest CAV below y = VIEW_HEIGHT in the chosen lane
+            if (a == nullptr || a->getY() < 2 * VIEW_HEIGHT / 3) {
+                m_actors.push_back(new ZombieCab(this, edge + ROAD_WIDTH / 6,
+                    VIEW_HEIGHT - SPRITE_HEIGHT / 2, m_ghostracer->getYSpeed() - randInt(2, 4)));
+                break;
+            }
+
+            sum += i;
+            if (sum == i) {
+                if (i >= 2) { i--; }
+                else { i = 3; }
+            }
+            else if (6 - sum > 0) {
+                i = 6 - sum;
+            }
+        }
+        
     }
 
     // Add oil slick
@@ -217,6 +240,49 @@ bool StudentWorld::checkProjectileCollision(Actor* projectile, Actor* &result)
 bool StudentWorld::checkGhostRacerCollision(Actor* a) const
 {
     return checkCollision(a, m_ghostracer);
+}
+
+Actor* StudentWorld::closestCAV(Actor* compare, double y, int direction, int leftEdge)
+// direction = 1 means above, direction = -1 means below
+{
+    double minimum = VIEW_HEIGHT;
+    Actor* a = nullptr; // in case no CAVs
+    int rightEdge = leftEdge + ROAD_WIDTH / 3;
+
+    double dy = direction*(m_ghostracer->getY() - y);
+    if (dy > 0 && m_ghostracer->getX() > leftEdge && m_ghostracer->getX() < rightEdge) { 
+        a = m_ghostracer;
+        minimum = dy; 
+    }
+
+    for (list<Actor*>::iterator it = m_actors.begin(); it != m_actors.end(); it++) {
+        Actor* b = *it;
+        if (b->isCollisionAvoidanceWorthy() && b != compare && b->getX() > leftEdge && b->getX() < rightEdge) {
+            dy = direction*(b->getY() - y);
+            if (dy >= 0 && dy < minimum) {
+                a = b;
+                minimum = dy;
+            }
+        }
+    }
+    return a;
+}
+
+int StudentWorld::determineLeftEdge(double x) const
+{
+    int LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH / 2;
+    int RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH / 2;
+    int MID_LEFT_EDGE = LEFT_EDGE + ROAD_WIDTH / 3;
+    int MID_RIGHT_EDGE = RIGHT_EDGE - ROAD_WIDTH / 3;
+    if (x >= LEFT_EDGE && x < MID_LEFT_EDGE) return LEFT_EDGE; // Left lane
+    if (x >= MID_LEFT_EDGE && x < MID_RIGHT_EDGE) return MID_LEFT_EDGE; // Center lane
+    if (x >= MID_RIGHT_EDGE && x <= RIGHT_EDGE) return MID_RIGHT_EDGE; // Right lane
+    return -1; // not within the lanes
+}
+
+void StudentWorld::addSoul()
+{
+    m_saved++;
 }
 
 void StudentWorld::spawnActor(Actor* a)
