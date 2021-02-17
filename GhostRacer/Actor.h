@@ -132,13 +132,16 @@ public:
 		double startX, double startY, double xSpeed, double ySpeed);
 	virtual ~Hostile();
 
+	virtual void doSomething();
+
 	int getPlanDistance() const;
 
 	void setPlanDistance(int amount);
-	virtual void pickNewPlan() = 0;
 
 private:
 	int m_plandistance;
+	virtual void interactWithGhostRacer() = 0;
+	virtual void changeMovement() = 0;
 };
 
 class Pedestrian : public Hostile
@@ -147,9 +150,8 @@ public:
 	Pedestrian(int imageID, int size, StudentWorld* world, double startX, double startY);
 	virtual ~Pedestrian();
 
-	virtual void pickNewPlan();
-
 private:
+	virtual void changeMovement();
 	virtual void makeHurtSound() const;
 	virtual void makeDieSound() const;
 };
@@ -160,8 +162,10 @@ public:
 	HumanPedestrian(StudentWorld* world, double startX, double startY);
 	virtual ~HumanPedestrian();
 
-	virtual void doSomething();
 	virtual void damage(int amount);
+
+private:
+	virtual void interactWithGhostRacer();
 };
 
 class ZombiePedestrian : public Pedestrian
@@ -170,10 +174,11 @@ public:
 	ZombiePedestrian(StudentWorld* world, double startX, double startY);
 	virtual ~ZombiePedestrian();
 
-	virtual void doSomething();
 	virtual void damage(int amount);
+
 private:
 	int m_tickstogrunt;
+	virtual void interactWithGhostRacer();
 };
 
 class ZombieCab : public Hostile
@@ -182,11 +187,12 @@ public:
 	ZombieCab(StudentWorld* world, double startX, double startY);
 	virtual ~ZombieCab();
 
-	virtual void doSomething();
 	virtual void damage(int amount);
-	virtual void pickNewPlan();
+
 private:
 	bool m_hit;
+	virtual void interactWithGhostRacer();
+	virtual void changeMovement();
 	virtual void makeHurtSound() const;
 	virtual void makeDieSound() const;
 };

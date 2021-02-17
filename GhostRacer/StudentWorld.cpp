@@ -80,13 +80,19 @@ int StudentWorld::move()
 
     // Move all actors
     m_ghostracer->doSomething();
-    if (!m_ghostracer->isAlive()) { return GWSTATUS_PLAYER_DIED; }
+    if (!m_ghostracer->isAlive()) { 
+        decLives();
+        return GWSTATUS_PLAYER_DIED; 
+    }
 
     for (list<Actor*>::iterator it = m_actors.begin(); it != m_actors.end(); it++) {
         Actor* a = *it;
         if (a->isAlive()) {
             a->doSomething();
-            if (!m_ghostracer->isAlive()) { return GWSTATUS_PLAYER_DIED; }
+            if (!m_ghostracer->isAlive()) { 
+                decLives();
+                return GWSTATUS_PLAYER_DIED; 
+            }
             if (m_saved >= GameWorld::getLevel() * 2 + 5) {
                 increaseScore(m_bonus);
                 return GWSTATUS_FINISHED_LEVEL;

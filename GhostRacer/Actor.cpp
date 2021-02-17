@@ -465,8 +465,8 @@ void ZombiePedestrian::interactWithGhostRacer()
 	double dy = getY() - getWorld()->getGhostRacer()->getY();
 	if (dx >= -30 && dx <= 30 && dy > 0) {
 		setDirection(270);
-		if (dx > 0) { setXSpeed(1); } // To the left
-		else if (dx < 0) { setXSpeed(-1); } // To the right
+		if (dx < 0) { setXSpeed(1); } // To the left
+		else if (dx > 0) { setXSpeed(-1); } // To the right
 		else { setXSpeed(0); } 
 		m_tickstogrunt--;
 		if (m_tickstogrunt <= 0) {
@@ -539,11 +539,11 @@ void ZombieCab::interactWithGhostRacer()
 		getWorld()->playSound(SOUND_VEHICLE_CRASH);
 		getWorld()->getGhostRacer()->damage(20);
 		double dx = getX() - getWorld()->getGhostRacer()->getX();
-		if (dx >= 0) {
+		if (dx < 0) { // To the left
 			setXSpeed(-5);
 			setDirection(120 + randInt(0, 19));
 		}
-		else {
+		else { // To the right
 			setXSpeed(5);
 			setDirection(60 - randInt(0, 19));
 		}
