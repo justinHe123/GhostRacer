@@ -506,9 +506,7 @@ void ZombieCab::changeMovement()
 	int newPlanDistance = getPlanDistance() - 1;
 	setPlanDistance(newPlanDistance);
 	if (newPlanDistance > 0) return;
-	int randSpeed = randInt(-2, 1);
-	if (randSpeed >= 0) randSpeed++;
-	setYSpeed(getYSpeed() + randSpeed);
+	setYSpeed(getYSpeed() + randInt(-2, 2));
 	setPlanDistance(randInt(4, 32));
 }
 
