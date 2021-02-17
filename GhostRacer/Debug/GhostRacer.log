@@ -1,8 +1,5 @@
-﻿  Actor.cpp
-C:\Users\justi\Downloads\GhostRacer-skeleton-windows (1)\GhostRacer\GhostRacer\Actor.cpp(254,49): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-  StudentWorld.cpp
-C:\Users\justi\Downloads\GhostRacer-skeleton-windows (1)\GhostRacer\GhostRacer\StudentWorld.cpp(158,17): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\justi\Downloads\GhostRacer-skeleton-windows (1)\GhostRacer\GhostRacer\StudentWorld.cpp(159,17): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\justi\Downloads\GhostRacer-skeleton-windows (1)\GhostRacer\GhostRacer\StudentWorld.cpp(160,20): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-  Generating Code...
+﻿  StudentWorld.cpp
+C:\Users\justi\Downloads\GhostRacer-skeleton-windows (1)\GhostRacer\GhostRacer\StudentWorld.cpp(192,17): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\justi\Downloads\GhostRacer-skeleton-windows (1)\GhostRacer\GhostRacer\StudentWorld.cpp(194,17): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\justi\Downloads\GhostRacer-skeleton-windows (1)\GhostRacer\GhostRacer\StudentWorld.cpp(196,20): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
   GhostRacer.vcxproj -> C:\Users\justi\Downloads\GhostRacer-skeleton-windows (1)\GhostRacer\Debug\GhostRacer.exe

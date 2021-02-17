@@ -94,7 +94,7 @@ int StudentWorld::move()
         }
     }
 
-    // delete dead actors (WATCH OUT FOR DELETION GOTCHA)
+    // delete dead actors
     for (list<Actor*>::iterator it = m_actors.begin(); it != m_actors.end(); ) {
         Actor* a = *it;
         if(!a->isAlive()) { 
@@ -104,7 +104,7 @@ int StudentWorld::move()
         else { it++; }
     }
 
-    // TODO: Potentially add new actors 
+    // Potentially add new actors 
     // Add new road markers
     int LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH / 2;
     int RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH / 2;
@@ -121,8 +121,44 @@ int StudentWorld::move()
         m_actors.push_back(new WhiteBorderLine(this, RIGHT_EDGE - ROAD_WIDTH / 3, new_border_y));
     }
 
+    // Add zombie cab
+    int chance = max(100 - getLevel() * 10, 20);
+    if (randInt(0, chance - 1) == 0) {
+        // TODO: Spawn new zombie cab
+    }
+
+    // Add oil slick
+    chance = max(150 - getLevel() * 10, 40);
+    if (randInt(0, chance - 1) == 0) {
+        m_actors.push_back(new OilSlick(randInt(2, 5), this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
+    }
+
+    // Add zombie ped
+    chance = max(100 - getLevel() * 10, 20);
+    if (randInt(0, chance - 1) == 0) {
+        m_actors.push_back(new ZombiePedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT));
+    }
+
+    // Add human ped
+    chance = max(200 - getLevel() * 10, 30);
+    if (randInt(0, chance - 1) == 0) {
+        m_actors.push_back(new HumanPedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT));
+    }
+
+    // Add holy water refill
+    chance = 100 + 10 * getLevel();
+    if (randInt(0, chance - 1) == 0) {
+        m_actors.push_back(new HolyWaterGoodie(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
+    }
+
+    // Add lost soul
+    chance = 100;
+    if (randInt(0, chance - 1) == 0) {
+        m_actors.push_back(new SoulGoodie(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
+    }
+
+
     // Update game status
-    // TODO: Use StringStream
     ostringstream oss;
     oss << setw(7) << "Score: " << setw(5) << getScore();
     oss << setw(12) << " Souls2Save: " << setw(3) << GameWorld::getLevel() * 2 + 5 - m_saved;
@@ -154,7 +190,9 @@ GhostRacer* StudentWorld::getGhostRacer() const
 bool StudentWorld::checkCollision(Actor* a, Actor* b) const
 {
     int delta_x = a->getX() - b->getX();
+    if (delta_x < 0) delta_x *= -1;
     int delta_y = a->getY() - b->getY();
+    if (delta_y < 0) delta_y *= -1;
     int radius_sum = a->getRadius() + b->getRadius();
     return delta_x < radius_sum * 0.25 && delta_y < radius_sum * 0.6;
 }

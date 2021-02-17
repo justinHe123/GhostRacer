@@ -348,6 +348,15 @@ Hostile::~Hostile()
 
 }
 
+void Hostile::doSomething()
+{
+	if (!isAlive()) return;
+	interactWithGhostRacer();
+	if (!isAlive()) return;
+	move();
+	changeMovement();
+}
+
 int Hostile::getPlanDistance() const
 {
 	return m_plandistance;
@@ -383,7 +392,7 @@ void Pedestrian::makeDieSound() const
 	getWorld()->playSound(SOUND_PED_DIE);
 }
 
-void Pedestrian::pickNewPlan()
+void Pedestrian::changeMovement()
 {
 	int newPlanDistance = getPlanDistance() - 1;
 	setPlanDistance(newPlanDistance);
@@ -419,16 +428,12 @@ void HumanPedestrian::damage(int amount)
 	setDirection(getDirection() + 180);
 }
 
-void HumanPedestrian::doSomething()
+void HumanPedestrian::interactWithGhostRacer()
 {
-	if (!isAlive()) return;
 	if (getWorld()->checkGhostRacerCollision(this)) {
 		getWorld()->getGhostRacer()->die();
-		return;
+		die();
 	}
-
-	move();
-	pickNewPlan();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -447,9 +452,8 @@ ZombiePedestrian::~ZombiePedestrian()
 
 }
 
-void ZombiePedestrian::doSomething()
+void ZombiePedestrian::interactWithGhostRacer()
 {
-	if (!isAlive()) return;
 	if (getWorld()->checkGhostRacerCollision(this))
 	{
 		getWorld()->getGhostRacer()->damage(5);
@@ -470,9 +474,6 @@ void ZombiePedestrian::doSomething()
 			m_tickstogrunt = 20;
 		}
 	}
-
-	move();
-	pickNewPlan();
 }
 
 void ZombiePedestrian::damage(int amount)
@@ -511,8 +512,17 @@ void ZombieCab::damage(int amount)
 	}
 }
 
-void ZombieCab::pickNewPlan()
+void ZombieCab::changeMovement()
 {
+	// Adjust speed
+	double dv = getYSpeed() - getWorld()->getGhostRacer()->getYSpeed();
+	if (dv > 0) {
+		// TODO
+	}
+	else if (dv <= 0) {
+		// TODO
+	}
+
 	int newPlanDistance = getPlanDistance() - 1;
 	setPlanDistance(newPlanDistance);
 	if (newPlanDistance > 0) return;
@@ -523,10 +533,8 @@ void ZombieCab::pickNewPlan()
 }
 
 
-void ZombieCab::doSomething() 
+void ZombieCab::interactWithGhostRacer() 
 {
-	if (!isAlive()) return;
-
 	if (!m_hit && getWorld()->checkGhostRacerCollision(this)) {
 		getWorld()->playSound(SOUND_VEHICLE_CRASH);
 		getWorld()->getGhostRacer()->damage(20);
@@ -541,19 +549,6 @@ void ZombieCab::doSomething()
 		}
 		m_hit = true;
 	}
-
-	move();
-
-	// Adjust speed
-	double dv = getYSpeed() - getWorld()->getGhostRacer()->getYSpeed();
-	if (dv > 0) {
-		// TODO
-	}
-	else if (dv <= 0) {
-		// TODO
-	}
-
-	pickNewPlan();
 }
 
 void ZombieCab::makeHurtSound() const
@@ -585,9 +580,7 @@ void Interactable::doSomething()
 {
 	if (!isAlive()) return;
 	move();
-	if (getWorld()->checkGhostRacerCollision(this)) {
-		interactWithGhostRacer();
-	}
+	interactWithGhostRacer();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -627,10 +620,12 @@ HolyWaterGoodie::~HolyWaterGoodie()
 
 void HolyWaterGoodie::interactWithGhostRacer()
 {
-	getWorld()->getGhostRacer()->addSprays(10);
-	die();
-	getWorld()->playSound(SOUND_GOT_GOODIE);
-	getWorld()->increaseScore(50);
+	if (getWorld()->checkGhostRacerCollision(this)) {
+		getWorld()->getGhostRacer()->addSprays(10);
+		die();
+		getWorld()->playSound(SOUND_GOT_GOODIE);
+		getWorld()->increaseScore(50);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -650,10 +645,12 @@ HealingGoodie::~HealingGoodie()
 
 void HealingGoodie::interactWithGhostRacer()
 {
-	getWorld()->getGhostRacer()->heal(10);
-	die();
-	getWorld()->playSound(SOUND_GOT_GOODIE);
-	getWorld()->increaseScore(250);
+	if (getWorld()->checkGhostRacerCollision(this)) {
+		getWorld()->getGhostRacer()->heal(10);
+		die();
+		getWorld()->playSound(SOUND_GOT_GOODIE);
+		getWorld()->increaseScore(250);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -699,6 +696,8 @@ OilSlick::~OilSlick()
 
 void OilSlick::interactWithGhostRacer()
 {
-	getWorld()->playSound(SOUND_OIL_SLICK);
-	getWorld()->getGhostRacer()->spin();
+	if (getWorld()->checkGhostRacerCollision(this)) {
+		getWorld()->playSound(SOUND_OIL_SLICK);
+		getWorld()->getGhostRacer()->spin();
+	}
 }
