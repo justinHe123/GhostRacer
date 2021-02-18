@@ -189,6 +189,7 @@ int StudentWorld::move()
     // Update game status
     ostringstream oss;
     oss << setw(7) << "Score: " << setw(5) << getScore();
+    oss << setw(6) << " Lvl: " << setw(1) << getLevel();
     oss << setw(12) << " Souls2Save: " << setw(3) << GameWorld::getLevel() * 2 + 5 - m_saved;
     oss << setw(8) << " Lives: " << setw(1) << getLives();
     oss << setw(9) << " Health: " << setw(3) << m_ghostracer->getHealth();
