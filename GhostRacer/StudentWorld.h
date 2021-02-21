@@ -37,6 +37,7 @@ private:
     int m_whitebordery;
 
     bool checkCollision(Actor* first, Actor* second) const;
+    int randExcept(int i) const;
 };
 
 #endif // STUDENTWORLD_H_

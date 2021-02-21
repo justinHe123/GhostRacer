@@ -146,8 +146,7 @@ int StudentWorld::move()
 
             sum += i;
             if (sum == i) {
-                if (i >= 2) { i--; }
-                else { i = 3; }
+                i = randExcept(i);
             }
             else if (6 - sum > 0) {
                 i = 6 - sum;
@@ -290,4 +289,18 @@ void StudentWorld::addSoul()
 void StudentWorld::spawnActor(Actor* a)
 {
     m_actors.push_back(a);
+}
+
+int StudentWorld::randExcept(int i) const
+{
+    if (i == 1) {
+        return randInt(2, 3);
+    }
+    else if (i == 2) {
+        int possible[2] = { 1, 3 };
+        return possible[randInt(0, 1)];
+    }
+    else {
+        return randInt(1, 2);
+    }
 }
