@@ -60,7 +60,7 @@ public:
 	virtual ~LivingActor();
 
 	virtual bool isCollisionAvoidanceWorthy() const;
-	bool LivingActor::isProjectileVulnerable() const;
+	bool isProjectileVulnerable() const;
 
 	int getHealth() const;
 
