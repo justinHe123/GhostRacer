@@ -33,8 +33,8 @@ private:
     GhostRacer* m_ghostracer;
     std::list<Actor*> m_actors;
     int m_saved;
-    int m_whitebordery;
     int m_bonus;
+    int m_whitebordery;
 
     bool checkCollision(Actor* first, Actor* second) const;
 };

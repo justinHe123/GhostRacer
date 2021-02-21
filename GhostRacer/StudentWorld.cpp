@@ -18,11 +18,12 @@ GameWorld* createStudentWorld(string assetPath)
 
 StudentWorld::StudentWorld(string assetPath) :
     GameWorld(assetPath),
+    m_ghostracer(nullptr),
     m_saved(0),
-    m_whitebordery(0),
     m_bonus(5000),
-    m_ghostracer(nullptr)
+    m_whitebordery(0)
 {
+
 }
 
 StudentWorld::~StudentWorld()
