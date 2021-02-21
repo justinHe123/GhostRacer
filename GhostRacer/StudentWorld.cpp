@@ -47,8 +47,8 @@ int StudentWorld::init()
     // add yellow border lines
     int y = 0;
     for (int i = 0; i < n; i++) {
-        m_actors.push_back(new BorderLine(IID_YELLOW_BORDER_LINE, this, LEFT_EDGE, y));
-        m_actors.push_back(new BorderLine(IID_YELLOW_BORDER_LINE, this, RIGHT_EDGE, y));
+        spawnActor(new BorderLine(IID_YELLOW_BORDER_LINE, this, LEFT_EDGE, y));
+        spawnActor(new BorderLine(IID_YELLOW_BORDER_LINE, this, RIGHT_EDGE, y));
         y += SPRITE_HEIGHT;
     }
 
@@ -56,8 +56,8 @@ int StudentWorld::init()
     int m = VIEW_HEIGHT / (4 * SPRITE_HEIGHT);
     y = 0;
     for (int i = 0; i < m; i++) {
-        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, LEFT_EDGE + ROAD_WIDTH/3.0, y));
-        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, RIGHT_EDGE - ROAD_WIDTH/3.0, y));
+        spawnActor(new BorderLine(IID_WHITE_BORDER_LINE, this, LEFT_EDGE + ROAD_WIDTH/3.0, y));
+        spawnActor(new BorderLine(IID_WHITE_BORDER_LINE, this, RIGHT_EDGE - ROAD_WIDTH/3.0, y));
         y += 4 * SPRITE_HEIGHT;
     }
 
@@ -83,7 +83,7 @@ int StudentWorld::move()
                 decLives();
                 return GWSTATUS_PLAYER_DIED; 
             }
-            if (m_saved >= GameWorld::getLevel() * 2 + 5) {
+            if (m_saved >= getLevel() * 2 + 5) {
                 increaseScore(m_bonus);
                 return GWSTATUS_FINISHED_LEVEL;
             }
@@ -109,13 +109,13 @@ int StudentWorld::move()
     int delta_y = new_border_y - m_whitebordery;
     if (delta_y >= SPRITE_HEIGHT)
     {
-        m_actors.push_back(new BorderLine(IID_YELLOW_BORDER_LINE, this, LEFT_EDGE, new_border_y));
-        m_actors.push_back(new BorderLine(IID_YELLOW_BORDER_LINE, this, RIGHT_EDGE, new_border_y));
+        spawnActor(new BorderLine(IID_YELLOW_BORDER_LINE, this, LEFT_EDGE, new_border_y));
+        spawnActor(new BorderLine(IID_YELLOW_BORDER_LINE, this, RIGHT_EDGE, new_border_y));
     }
     if (delta_y >= 4 * SPRITE_HEIGHT)
     {
-        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, LEFT_EDGE + ROAD_WIDTH / 3.0, new_border_y));
-        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, RIGHT_EDGE - ROAD_WIDTH / 3.0, new_border_y));
+        spawnActor(new BorderLine(IID_WHITE_BORDER_LINE, this, LEFT_EDGE + ROAD_WIDTH / 3.0, new_border_y));
+        spawnActor(new BorderLine(IID_WHITE_BORDER_LINE, this, RIGHT_EDGE - ROAD_WIDTH / 3.0, new_border_y));
         m_whitebordery = new_border_y;
     }
 
@@ -133,13 +133,13 @@ int StudentWorld::move()
             edge = edges[i - 1];
             a = closestCAV(nullptr, 0, 1, edge); // Closest CAV above y = 0 in the chosen lane
             if (a == nullptr || a->getY() > VIEW_HEIGHT / 3) {
-                m_actors.push_back(new ZombieCab(this, edge + ROAD_WIDTH / 6.0, 
+                spawnActor(new ZombieCab(this, edge + ROAD_WIDTH / 6.0, 
                     SPRITE_HEIGHT / 2.0, m_ghostracer->getYSpeed() + randInt(2, 4)));
                 break;
             }
             a = closestCAV(nullptr, VIEW_HEIGHT, -1, edge); // Closest CAV below y = VIEW_HEIGHT in the chosen lane
             if (a == nullptr || a->getY() < 2 * VIEW_HEIGHT / 3) {
-                m_actors.push_back(new ZombieCab(this, edge + ROAD_WIDTH / 6.0,
+                spawnActor(new ZombieCab(this, edge + ROAD_WIDTH / 6.0,
                     VIEW_HEIGHT - SPRITE_HEIGHT / 2.0, m_ghostracer->getYSpeed() - randInt(2, 4)));
                 break;
             }
@@ -159,31 +159,31 @@ int StudentWorld::move()
     // Add oil slick
     chance = max(150 - getLevel() * 10, 40);
     if (randInt(0, chance - 1) == 0) {
-        m_actors.push_back(new OilSlick(randInt(2, 5), this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
+        spawnActor(new OilSlick(randInt(2, 5), this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
     }
 
     // Add zombie ped
     chance = max(100 - getLevel() * 10, 20);
     if (randInt(0, chance - 1) == 0) {
-        m_actors.push_back(new ZombiePedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT));
+        spawnActor(new ZombiePedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT));
     }
 
     // Add human ped
     chance = max(200 - getLevel() * 10, 30);
     if (randInt(0, chance - 1) == 0) {
-        m_actors.push_back(new HumanPedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT));
+        spawnActor(new HumanPedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT));
     }
 
     // Add holy water refill
     chance = 100 + 10 * getLevel();
     if (randInt(0, chance - 1) == 0) {
-        m_actors.push_back(new HolyWaterGoodie(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
+        spawnActor(new HolyWaterGoodie(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
     }
 
     // Add lost soul
     chance = 100;
     if (randInt(0, chance - 1) == 0) {
-        m_actors.push_back(new SoulGoodie(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
+        spawnActor(new SoulGoodie(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
     }
 
 
@@ -191,7 +191,7 @@ int StudentWorld::move()
     ostringstream oss;
     oss << setw(7) << "Score: " << setw(5) << getScore();
     oss << setw(6) << " Lvl: " << setw(1) << getLevel();
-    oss << setw(12) << " Souls2Save: " << setw(3) << GameWorld::getLevel() * 2 + 5 - m_saved;
+    oss << setw(12) << " Souls2Save: " << setw(3) << getLevel() * 2 + 5 - m_saved;
     oss << setw(8) << " Lives: " << setw(1) << getLives();
     oss << setw(9) << " Health: " << setw(3) << m_ghostracer->getHealth();
     oss << setw(9) << " Sprays: " << setw(3) << m_ghostracer->getSprays();
