@@ -162,13 +162,13 @@ void GhostRacer::doSomething()
 	if (!isAlive()) return;
 
 	int ch;
-	if (getX() <= ROAD_CENTER - ROAD_WIDTH / 2)
+	if (getX() <= ROAD_CENTER - ROAD_WIDTH / 2.0)
 	{
 		if (getDirection() > 90) damage(10);
 		setDirection(82);
 		getWorld()->playSound(SOUND_VEHICLE_CRASH);
 	}
-	else if (getX() >= ROAD_CENTER + ROAD_WIDTH / 2)
+	else if (getX() >= ROAD_CENTER + ROAD_WIDTH / 2.0)
 	{
 		if (getDirection() < 90) damage(10);
 		setDirection(98);
