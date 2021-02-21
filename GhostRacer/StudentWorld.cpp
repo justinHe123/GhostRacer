@@ -56,8 +56,8 @@ int StudentWorld::init()
     int m = VIEW_HEIGHT / (4 * SPRITE_HEIGHT);
     y = 0;
     for (int i = 0; i < m; i++) {
-        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, LEFT_EDGE + ROAD_WIDTH/3, y));
-        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, RIGHT_EDGE - ROAD_WIDTH/3, y));
+        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, LEFT_EDGE + ROAD_WIDTH/3.0, y));
+        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, RIGHT_EDGE - ROAD_WIDTH/3.0, y));
         y += 4 * SPRITE_HEIGHT;
     }
 
@@ -114,8 +114,8 @@ int StudentWorld::move()
     }
     if (delta_y >= 4 * SPRITE_HEIGHT)
     {
-        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, LEFT_EDGE + ROAD_WIDTH / 3, new_border_y));
-        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, RIGHT_EDGE - ROAD_WIDTH / 3, new_border_y));
+        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, LEFT_EDGE + ROAD_WIDTH / 3.0, new_border_y));
+        m_actors.push_back(new BorderLine(IID_WHITE_BORDER_LINE, this, RIGHT_EDGE - ROAD_WIDTH / 3.0, new_border_y));
         m_whitebordery = new_border_y;
     }
 
@@ -133,14 +133,14 @@ int StudentWorld::move()
             edge = edges[i - 1];
             a = closestCAV(nullptr, 0, 1, edge); // Closest CAV above y = 0 in the chosen lane
             if (a == nullptr || a->getY() > VIEW_HEIGHT / 3) {
-                m_actors.push_back(new ZombieCab(this, edge + ROAD_WIDTH / 6, 
-                    SPRITE_HEIGHT / 2, m_ghostracer->getYSpeed() + randInt(2, 4)));
+                m_actors.push_back(new ZombieCab(this, edge + ROAD_WIDTH / 6.0, 
+                    SPRITE_HEIGHT / 2.0, m_ghostracer->getYSpeed() + randInt(2, 4)));
                 break;
             }
             a = closestCAV(nullptr, VIEW_HEIGHT, -1, edge); // Closest CAV below y = VIEW_HEIGHT in the chosen lane
             if (a == nullptr || a->getY() < 2 * VIEW_HEIGHT / 3) {
-                m_actors.push_back(new ZombieCab(this, edge + ROAD_WIDTH / 6,
-                    VIEW_HEIGHT - SPRITE_HEIGHT / 2, m_ghostracer->getYSpeed() - randInt(2, 4)));
+                m_actors.push_back(new ZombieCab(this, edge + ROAD_WIDTH / 6.0,
+                    VIEW_HEIGHT - SPRITE_HEIGHT / 2.0, m_ghostracer->getYSpeed() - randInt(2, 4)));
                 break;
             }
 
