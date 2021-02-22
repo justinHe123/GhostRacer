@@ -277,7 +277,7 @@ int StudentWorld::determineLeftEdge(double x) const
     int MID_RIGHT_EDGE = RIGHT_EDGE - ROAD_WIDTH / 3;
     if (x >= LEFT_EDGE && x < MID_LEFT_EDGE) return LEFT_EDGE; // Left lane
     if (x >= MID_LEFT_EDGE && x < MID_RIGHT_EDGE) return MID_LEFT_EDGE; // Center lane
-    if (x >= MID_RIGHT_EDGE && x <= RIGHT_EDGE) return MID_RIGHT_EDGE; // Right lane
+    if (x >= MID_RIGHT_EDGE && x < RIGHT_EDGE) return MID_RIGHT_EDGE; // Right lane
     return -1; // not within the lanes
 }
 
