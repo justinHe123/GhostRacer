@@ -21,9 +21,9 @@ public:
     virtual void cleanUp();
 
     GhostRacer* getGhostRacer() const;
-    bool checkProjectileCollision(Actor* projectile, Actor*& result); // NOTE: Cannot make const for some reason
+    bool checkProjectileCollision(Actor* projectile, Actor*& result) const;
     bool checkGhostRacerCollision(Actor* a) const;
-    Actor* closestCAV(Actor* compare, double y, int direction, int leftEdge);
+    Actor* closestCAV(Actor* compare, double y, int direction, int leftEdge) const;
     int determineLeftEdge(double x) const;
 
     void addSoul();
