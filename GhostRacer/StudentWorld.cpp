@@ -226,9 +226,9 @@ bool StudentWorld::checkCollision(Actor* a, Actor* b) const
     return delta_x < radius_sum * 0.25 && delta_y < radius_sum * 0.6;
 }
 
-bool StudentWorld::checkProjectileCollision(Actor* projectile, Actor* &result)
+bool StudentWorld::checkProjectileCollision(Actor* projectile, Actor* &result) const
 {
-    for (list<Actor*>::iterator it = m_actors.begin(); it != m_actors.end(); it++) {
+    for (list<Actor*>::const_iterator it = m_actors.begin(); it != m_actors.end(); it++) {
         Actor* a = *it;
         if (a->isProjectileVulnerable() && checkCollision(projectile, a)) {
             result = a; 
@@ -243,7 +243,7 @@ bool StudentWorld::checkGhostRacerCollision(Actor* a) const
     return checkCollision(a, m_ghostracer);
 }
 
-Actor* StudentWorld::closestCAV(Actor* compare, double y, int direction, int leftEdge)
+Actor* StudentWorld::closestCAV(Actor* compare, double y, int direction, int leftEdge) const
 // direction = 1 means above, direction = -1 means below
 {
     double minimum = VIEW_HEIGHT;
@@ -256,7 +256,7 @@ Actor* StudentWorld::closestCAV(Actor* compare, double y, int direction, int lef
         minimum = dy; 
     }
 
-    for (list<Actor*>::iterator it = m_actors.begin(); it != m_actors.end(); it++) {
+    for (list<Actor*>::const_iterator it = m_actors.begin(); it != m_actors.end(); it++) {
         Actor* b = *it;
         if (b->isCollisionAvoidanceWorthy() && b != compare && b->getX() > leftEdge && b->getX() < rightEdge) {
             dy = direction*(b->getY() - y);
