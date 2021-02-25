@@ -329,6 +329,7 @@ void Hostile::doSomething()
 	interactWithGhostRacer();
 	if (!isAlive()) return;
 	move();
+	if (!isAlive()) return;
 	changeMovement();
 }
 
@@ -558,6 +559,7 @@ void Interactable::doSomething()
 {
 	if (!isAlive()) return;
 	move();
+	if (!isAlive()) return;
 	interactWithGhostRacer();
 }
 
