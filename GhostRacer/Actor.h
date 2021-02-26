@@ -23,7 +23,6 @@ class Actor : public GraphObject
 {
 public:
 	// Constructor
-	// TODO: Consider moving xSpeed and ySpeed to a derived class
 	Actor(int imageID, double startX, double startY, int dir, double size, unsigned int depth, StudentWorld* world, double xSpeed, double ySpeed);
 	virtual ~Actor();
 
