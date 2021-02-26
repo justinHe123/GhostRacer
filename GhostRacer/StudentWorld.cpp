@@ -119,6 +119,7 @@ int StudentWorld::move()
     if (randInt(0, chance - 1) == 0) {
         // unholy code to determine spawn lane
         int edges[3] = { LEFT_EDGE, LEFT_EDGE + ROAD_WIDTH / 3, LEFT_EDGE + ROAD_WIDTH * 2 / 3 };
+        // Start with a random lane
         int i = randInt(1, 3);
         int sum = 0;
         int edge;
@@ -140,9 +141,11 @@ int StudentWorld::move()
 
             sum += i;
             if (sum == i) {
+                // Choose a random lane from the 2 remaining lanes
                 i = randExcept(i);
             }
             else if (6 - sum > 0) {
+                // Choose the final unchosen lane
                 i = 6 - sum;
             }
         }
@@ -211,11 +214,15 @@ GhostRacer* StudentWorld::getGhostRacer() const
 
 bool StudentWorld::checkCollision(Actor* a, Actor* b) const
 {
+    // Calculate difference in x coordinates
     int delta_x = a->getX() - b->getX();
     if (delta_x < 0) delta_x *= -1;
+    // Calculate difference in y coordinates
     int delta_y = a->getY() - b->getY();
     if (delta_y < 0) delta_y *= -1;
+    // Calculate sum of radii
     int radius_sum = a->getRadius() + b->getRadius();
+    // If differences are within a certain limit, collision
     return delta_x < radius_sum * 0.25 && delta_y < radius_sum * 0.6;
 }
 
@@ -246,8 +253,10 @@ Actor* StudentWorld::closestCAV(Actor* compare, double y, int direction, int lef
     double dy;
     for (list<Actor*>::const_iterator it = m_actors.begin(); it != m_actors.end(); it++) {
         Actor* b = *it;
+        // If they are in the given lane:
         if (b->isCollisionAvoidanceWorthy() && b != compare && b->getX() > leftEdge && b->getX() < rightEdge) {
             dy = direction*(b->getY() - y);
+            // Check if difference in y coord is less than current minimum
             if (dy >= 0 && dy < minimum) {
                 a = b;
                 minimum = dy;
@@ -259,10 +268,12 @@ Actor* StudentWorld::closestCAV(Actor* compare, double y, int direction, int lef
 
 int StudentWorld::determineLeftEdge(double x) const
 {
+    // Define road boundaries
     int LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH / 2;
     int RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH / 2;
     int MID_LEFT_EDGE = LEFT_EDGE + ROAD_WIDTH / 3;
     int MID_RIGHT_EDGE = RIGHT_EDGE - ROAD_WIDTH / 3;
+    // Check if x is within any boundaries
     if (x >= LEFT_EDGE && x < MID_LEFT_EDGE) return LEFT_EDGE; // Left lane
     if (x >= MID_LEFT_EDGE && x < MID_RIGHT_EDGE) return MID_LEFT_EDGE; // Center lane
     if (x >= MID_RIGHT_EDGE && x < RIGHT_EDGE) return MID_RIGHT_EDGE; // Right lane

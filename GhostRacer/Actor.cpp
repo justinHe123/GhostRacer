@@ -71,10 +71,12 @@ void Actor::die()
 
 void Actor::move()
 {
+	// Calculate vertical speed based on Ghost Racer's speed
 	double vert_speed = m_yspeed - getWorld()->getGhostRacer()->getYSpeed();
 	double new_y = getY() + vert_speed;
 	double new_x = getX() + m_xspeed;
 	moveTo(new_x, new_y);
+	// Die if out of bounds
 	if (new_x < 0 || new_x > VIEW_WIDTH || new_y < 0 || new_y > VIEW_HEIGHT) die();
 }
 
@@ -114,6 +116,7 @@ int LivingActor::getHealth() const
 void LivingActor::damage(int amount)
 {
 	m_health -= amount;
+	// Check if actor survives damage
 	if (m_health > 0)
 	{
 		makeHurtSound();
@@ -144,6 +147,7 @@ GhostRacer::~GhostRacer()
 
 void GhostRacer::move()
 {
+	// Move horizontally based on direction
 	double max_shift_per_tick = 4.0;
 	static const double PI = 4 * atan(1.0);
 	double theta = getDirection() * 1.0 / 360 * 2 * PI;
@@ -156,13 +160,13 @@ void GhostRacer::doSomething()
 	if (!isAlive()) return;
 
 	int ch;
-	if (getX() <= ROAD_CENTER - ROAD_WIDTH / 2.0)
+	if (getX() <= ROAD_CENTER - ROAD_WIDTH / 2.0) // Ghost Racer over left boundary
 	{
 		if (getDirection() > 90) damage(10);
 		setDirection(82);
 		getWorld()->playSound(SOUND_VEHICLE_CRASH);
 	}
-	else if (getX() >= ROAD_CENTER + ROAD_WIDTH / 2.0)
+	else if (getX() >= ROAD_CENTER + ROAD_WIDTH / 2.0) // Ghost Racer over right bounary
 	{
 		if (getDirection() < 90) damage(10);
 		setDirection(98);
@@ -172,7 +176,7 @@ void GhostRacer::doSomething()
 	{
 		switch (ch)
 		{
-		case KEY_PRESS_SPACE:
+		case KEY_PRESS_SPACE: // Fires a spray
 			if (m_sprays >= 1) {
 				double dx, dy;
 				int dir = getDirection();
@@ -182,16 +186,16 @@ void GhostRacer::doSomething()
 				m_sprays--;
 			}
 			break;
-		case KEY_PRESS_LEFT:
+		case KEY_PRESS_LEFT: // Changes direction
 			if (getDirection() < 114) { setDirection(getDirection() + 8); }
 			break;
-		case KEY_PRESS_RIGHT:
+		case KEY_PRESS_RIGHT: // Changes direction
 			if (getDirection() > 66) { setDirection(getDirection() - 8); }
 			break;
-		case KEY_PRESS_UP:
+		case KEY_PRESS_UP: // Speeds up
 			if (getYSpeed() < 5) { setYSpeed(getYSpeed() + 1); }
 			break;
-		case KEY_PRESS_DOWN:
+		case KEY_PRESS_DOWN: // Slows down
 			if (getYSpeed() > -1) { setYSpeed(getYSpeed() - 1); }
 			break;
 		}
@@ -200,7 +204,6 @@ void GhostRacer::doSomething()
 	move();
 }
 
-// TODO: Check if Forward Speed = Vertical Speed
 int GhostRacer::getSprays() const
 {
 	return m_sprays;
@@ -213,15 +216,17 @@ void GhostRacer::addSprays(int amount)
 
 void GhostRacer::heal(int amount)
 {
-	if (amount + getHealth() > 100) { amount = 100 - getHealth(); }
+	if (amount + getHealth() > 100) { amount = 100 - getHealth(); } // Prevent overheal
 	damage(-1*amount);
 }
 
 void GhostRacer::spin()
 {
+	// Spin by a random degree
 	int randDegree = randInt(-11, 20);
 	if (randDegree <= 4) randDegree -= 9;
 	int newDegree = getDirection() + randDegree;
+	// Don't go over/under a certain degree
 	if (newDegree > 120) newDegree = 120;
 	else if (newDegree < 60) newDegree = 60;
 	setDirection(newDegree);
@@ -278,7 +283,7 @@ void HolyWaterProjectile::doSomething()
 	if (!isAlive()) return;
 
 	Actor* a = nullptr;
-	if (getWorld()->checkProjectileCollision(this, a)) {
+	if (getWorld()->checkProjectileCollision(this, a)) { // a will be collided actor that is projectile vulnerable if true
 		a->damage(1);
 		die();
 		return;
@@ -372,6 +377,7 @@ void Pedestrian::changeMovement()
 	int newPlanDistance = getPlanDistance() - 1;
 	setPlanDistance(newPlanDistance);
 	if (newPlanDistance > 0) return;
+	// Current movement plan has finished, create a new one
 	int randSpeed = randInt(-3, 2);
 	if (randSpeed >= 0) randSpeed++;
 	setXSpeed(randSpeed);
@@ -398,14 +404,16 @@ HumanPedestrian::~HumanPedestrian()
 
 void HumanPedestrian::damage(int amount) 
 {
+	// Intercept damage and change to 0
 	LivingActor::damage(0);
+	// Reverse horizontal direction
 	setXSpeed(getXSpeed() * -1);
 	setDirection(getDirection() + 180);
 }
 
 void HumanPedestrian::interactWithGhostRacer()
 {
-	if (getWorld()->checkGhostRacerCollision(this)) {
+	if (getWorld()->checkGhostRacerCollision(this)) { // If colliding with Ghost Racer, kill him
 		getWorld()->getGhostRacer()->die();
 		die();
 	}
@@ -433,16 +441,17 @@ void ZombiePedestrian::interactWithGhostRacer()
 	{
 		getWorld()->getGhostRacer()->damage(5);
 		damage(2);
-		return; // NOTE: should de dead...
+		return; // NOTE: Zombie Pedestrian should be dead due to losing 2 health
 	}
 
 	double dx = getX() - getWorld()->getGhostRacer()->getX();
 	double dy = getY() - getWorld()->getGhostRacer()->getY();
+	// If horizontally close enough to Ghost Racer
 	if (dx >= -30 && dx <= 30 && dy > 0) {
 		setDirection(270);
 		if (dx < 0) { setXSpeed(1); } // To the left
 		else if (dx > 0) { setXSpeed(-1); } // To the right
-		else { setXSpeed(0); } 
+		else { setXSpeed(0); } // Exactly same x coord
 		m_tickstogrunt--;
 		if (m_tickstogrunt <= 0) {
 			getWorld()->playSound(SOUND_ZOMBIE_ATTACK);
@@ -454,7 +463,7 @@ void ZombiePedestrian::interactWithGhostRacer()
 void ZombiePedestrian::damage(int amount)
 {
 	LivingActor::damage(amount);
-	if (!isAlive()) {
+	if (!isAlive()) { // Potentially spawn new healing goodie
 		int rand = randInt(1, 5);
 		if (rand == 1) getWorld()->spawnActor(new HealingGoodie(getWorld(), getX(), getY()));
 		if (!getWorld()->checkGhostRacerCollision(this)) { getWorld()->increaseScore(150); }
@@ -480,7 +489,7 @@ ZombieCab::~ZombieCab()
 void ZombieCab::damage(int amount)
 {
 	LivingActor::damage(amount);
-	if (!isAlive()) {
+	if (!isAlive()) { // Potentially spawn new oil slick
 		int rand = randInt(1, 5);
 		if (rand == 1) getWorld()->spawnActor(new OilSlick(randInt(2, 5), getWorld(), getX(), getY()));
 		getWorld()->increaseScore(200);
@@ -492,20 +501,21 @@ void ZombieCab::changeMovement()
 	// Adjust speed
 	double dv = getYSpeed() - getWorld()->getGhostRacer()->getYSpeed();
 	int leftEdge = getWorld()->determineLeftEdge(getX());
-	if (leftEdge != -1) {
+	if (leftEdge != -1) { // Check if in a valid lane
 		if (dv > 0) { // faster
 			Actor* a = getWorld()->closestCAV(this, getY(), 1, leftEdge);
-			if (a != nullptr && a->getY() - getY() < 96) { setYSpeed(getYSpeed() - 0.5); }
+			if (a != nullptr && a->getY() - getY() < 96) { setYSpeed(getYSpeed() - 0.5); } // Slow down if CAV ahead
 		}
 		else { // slower
 			Actor* a = getWorld()->closestCAV(this, getY(), -1, leftEdge);
-			if (a != nullptr && a != getWorld()->getGhostRacer() && getY() - a->getY() < 96) { setYSpeed(getYSpeed() + 0.5); }
+			if (a != nullptr && a != getWorld()->getGhostRacer() && getY() - a->getY() < 96) { setYSpeed(getYSpeed() + 0.5); } // Speed up if CAV behind that isn't Ghost Racer
 		}
 	}
 
 	int newPlanDistance = getPlanDistance() - 1;
 	setPlanDistance(newPlanDistance);
 	if (newPlanDistance > 0) return;
+	// Current movement plan has finished, create a new opne
 	setYSpeed(getYSpeed() + randInt(-2, 2));
 	setPlanDistance(randInt(4, 32));
 }
