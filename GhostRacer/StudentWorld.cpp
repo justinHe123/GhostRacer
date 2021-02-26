@@ -5,7 +5,6 @@
 
 #include <iostream>
 #include <sstream>
-#include <iomanip>
 #include <list>
 using namespace std;
 
@@ -183,13 +182,13 @@ int StudentWorld::move()
 
     // Update game status
     ostringstream oss;
-    oss << setw(7) << "Score: " << setw(5) << getScore();
-    oss << setw(6) << " Lvl: " << setw(1) << getLevel();
-    oss << setw(12) << " Souls2Save: " << setw(3) << getLevel() * 2 + 5 - m_saved;
-    oss << setw(8) << " Lives: " << setw(1) << getLives();
-    oss << setw(9) << " Health: " << setw(3) << m_ghostracer->getHealth();
-    oss << setw(9) << " Sprays: " << setw(3) << m_ghostracer->getSprays();
-    oss << setw(8) << " Bonus: " << setw(4) << m_bonus;
+    oss << "Score: " << getScore();
+    oss << " Lvl: " << getLevel();
+    oss << " Souls2Save: " << getLevel() * 2 + 5 - m_saved;
+    oss << " Lives: " << getLives();
+    oss << " Health: " << m_ghostracer->getHealth();
+    oss << " Sprays: " << m_ghostracer->getSprays();
+    oss << " Bonus: " << m_bonus;
     setGameStatText(oss.str());
 
     m_bonus--;
