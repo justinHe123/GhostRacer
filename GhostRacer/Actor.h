@@ -60,7 +60,6 @@ public:
 	virtual ~LivingActor();
 
 	virtual bool isCollisionAvoidanceWorthy() const;
-	virtual bool isProjectileVulnerable() const;
 
 	int getHealth() const;
 
@@ -122,6 +121,8 @@ public:
 	virtual ~Hostile();
 
 	virtual void doSomething();
+
+	virtual bool isProjectileVulnerable() const;
 
 	int getPlanDistance() const;
 

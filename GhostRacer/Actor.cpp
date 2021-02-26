@@ -105,12 +105,6 @@ bool LivingActor::isCollisionAvoidanceWorthy() const
 	return true;
 }
 
-// NOTE: Currently classifies GhostRacer is projectile vulnerable... not currently an issue as not in container
-bool LivingActor::isProjectileVulnerable() const
-{
-	return true;
-}
-
 int LivingActor::getHealth() const
 {
 	return m_health;
@@ -331,6 +325,11 @@ void Hostile::doSomething()
 	move();
 	if (!isAlive()) return;
 	changeMovement();
+}
+
+bool Hostile::isProjectileVulnerable() const
+{
+	return true;
 }
 
 int Hostile::getPlanDistance() const
