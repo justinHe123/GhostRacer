@@ -39,6 +39,7 @@ int StudentWorld::init()
 
     // add ghost racer
     m_ghostracer = new GhostRacer(this);
+    spawnActor(m_ghostracer);
     
     int n = VIEW_HEIGHT / SPRITE_HEIGHT;
     int LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH / 2;
@@ -69,12 +70,6 @@ int StudentWorld::init()
 int StudentWorld::move()
 {
     // Move all actors
-    m_ghostracer->doSomething();
-    if (!m_ghostracer->isAlive()) { 
-        decLives();
-        return GWSTATUS_PLAYER_DIED; 
-    }
-
     for (list<Actor*>::iterator it = m_actors.begin(); it != m_actors.end(); it++) {
         Actor* a = *it;
         if (a->isAlive()) {
@@ -208,7 +203,6 @@ void StudentWorld::cleanUp()
         delete *it;
         it = m_actors.erase(it);
     }
-    delete m_ghostracer;
 }
 
 GhostRacer* StudentWorld::getGhostRacer() const
@@ -250,12 +244,7 @@ Actor* StudentWorld::closestCAV(Actor* compare, double y, int direction, int lef
     Actor* a = nullptr; // in case no CAVs
     int rightEdge = leftEdge + ROAD_WIDTH / 3;
 
-    double dy = direction*(m_ghostracer->getY() - y);
-    if (dy > 0 && m_ghostracer->getX() > leftEdge && m_ghostracer->getX() < rightEdge) { 
-        a = m_ghostracer;
-        minimum = dy; 
-    }
-
+    double dy;
     for (list<Actor*>::const_iterator it = m_actors.begin(); it != m_actors.end(); it++) {
         Actor* b = *it;
         if (b->isCollisionAvoidanceWorthy() && b != compare && b->getX() > leftEdge && b->getX() < rightEdge) {
@@ -288,7 +277,7 @@ void StudentWorld::addSoul()
 
 void StudentWorld::spawnActor(Actor* a)
 {
-    m_actors.push_back(a);
+    m_actors.push_front(a);
 }
 
 int StudentWorld::randExcept(int i) const
