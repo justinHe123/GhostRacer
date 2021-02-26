@@ -34,16 +34,18 @@ public:
 	virtual bool isCollisionAvoidanceWorthy() const;
 	virtual bool isProjectileVulnerable() const;
 
-	StudentWorld* getWorld() const;
 	bool isAlive() const;
 	double getXSpeed() const;
 	double getYSpeed() const;
 
 	void die();
+	virtual void damage(int amount);
+
+protected:
+	StudentWorld* getWorld() const;
 	void setXSpeed(double speed);
 	void setYSpeed(double speed);
 	virtual void move();
-	virtual void damage(int amount);
 
 private:
 	bool m_alive;
@@ -61,9 +63,9 @@ public:
 
 	virtual bool isCollisionAvoidanceWorthy() const;
 
-	int getHealth() const;
-
 	virtual void damage(int amount);
+
+	int getHealth() const;
 
 private:
 	int m_health;
@@ -78,7 +80,6 @@ public:
 	virtual ~GhostRacer();
 
 	virtual void doSomething();
-	virtual void move();
 
 	int getSprays() const;
 
@@ -88,6 +89,7 @@ public:
 
 private:
 	int m_sprays;
+	virtual void move();
 	virtual void makeHurtSound() const;
 	virtual void makeDieSound() const;
 };
@@ -108,9 +110,9 @@ public:
 	virtual ~HolyWaterProjectile();
 
 	virtual void doSomething();
-	virtual void move();
 private:
 	int m_traveled;
+	virtual void move();
 };
 
 class Hostile : public LivingActor
@@ -124,8 +126,8 @@ public:
 
 	virtual bool isProjectileVulnerable() const;
 
+protected: 
 	int getPlanDistance() const;
-
 	void setPlanDistance(int amount);
 
 private:
